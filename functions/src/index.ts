@@ -4,15 +4,18 @@ import * as express from "express";
 
 import * as cors from "cors";
 import * as bodyParser from "body-parser";
+import { configureAllRoutes } from "./routes";
 
-import {routesConfig} from "./users/routes-config";
+
 
 admin.initializeApp();
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors({origin: true}));
-routesConfig(app);
+
+configureAllRoutes(app);
+
 
 export const api = functions.https.onRequest(app);
 
