@@ -5,7 +5,7 @@ import * as express from "express";
 
 import * as cors from "cors";
 import * as bodyParser from "body-parser";
-import { EmployerDataModel, StudentDataModel, UserDataModel } from "./models/user";
+import { EmployerDataModel, StudentDataModel } from "./models/user";
 
 
 
@@ -13,7 +13,22 @@ const db = admin.firestore();
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors({origin: true}));
+
+const ALLOWED_ORIGINS = ['http://localhost:4200', 'https://schoolfair.us'];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin) return callback(new Error('The CORS policy for this site does not allow access with no origin.'), false);
+
+        if (ALLOWED_ORIGINS.indexOf(origin) === -1) {
+            var msg = 'The CORS policy for this site does not ' +
+                    'allow access from the specified Origin.';  
+            return callback(new Error(msg), false);
+        }
+
+        return callback(null, true);
+    }
+}));
 
 app.post(`/user-data`, (req, res) => {
 
@@ -36,7 +51,7 @@ app.post(`/user-data`, (req, res) => {
         return res.end();
     }
 
-    docref.set(user).then((ref) => {
+    return docref.set(user).then((ref) => {
         res.status(200);
     }).catch((err) => {
         res.status(400);
