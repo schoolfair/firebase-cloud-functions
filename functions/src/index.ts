@@ -1,16 +1,16 @@
-import * as functions from "firebase-functions";
 import * as admin from 'firebase-admin';
 
-import { UserRecord } from "firebase-functions/v1/auth";
-import { User } from "./models/user";
-
 admin.initializeApp();
+
+import * as functions from 'firebase-functions';
+import { UserRecord } from 'firebase-functions/v1/auth';
+import { User } from './models/user';
+
+export { api } from './http';
 
 const db = admin.firestore();
 
 export const newUserCreated = functions.auth.user().onCreate((user: UserRecord) => {
-    
-    //functions.logger.info("New User Created");
     
     let uid = user.uid
 
@@ -20,7 +20,6 @@ export const newUserCreated = functions.auth.user().onCreate((user: UserRecord) 
         displayName: user.displayName,
         photoURL: user.photoURL,
         emailVerified: user.emailVerified,
-        roles: {}
     };
 
     db.collection(`users`).doc(uid).set(userModel).then((ref) => {

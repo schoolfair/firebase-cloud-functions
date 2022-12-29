@@ -1,42 +1,50 @@
-// import * as functions from "firebase-functions";
-// import * as admin from 'firebase-admin';
+import * as functions from "firebase-functions";
+import * as admin from 'firebase-admin';
 
-// import * as express from "express";
+import * as express from "express";
 
-// import * as cors from "cors";
-// import * as bodyParser from "body-parser";
-// import { User } from "./models/user";
+import * as cors from "cors";
+import * as bodyParser from "body-parser";
+import { EmployerDataModel, StudentDataModel, UserDataModel } from "./models/user";
 
 
 
-// const db = admin.firestore();
+const db = admin.firestore();
 
-// const app = express();
-// app.use(bodyParser.json());
-// app.use(cors({origin: true}));
+const app = express();
+app.use(bodyParser.json());
+app.use(cors({origin: true}));
 
-// app.post(`/users`, (req, res) => {
+app.post(`/user-data`, (req, res) => {
 
-//     functions.logger.info("Posted!");
+    let docref = db.doc(`user-data/${req.body.uid}`)
 
-//     let user = req.body;
+    let user;
 
-//     const userData: User = {
-//         uid: user.uid,
-//         email: user.email,
-//         displayName: user.displayName,
-//         photoURL: user.photoURL,
-//         emailVerified: user.emailVerified,
-//     };
+    if (req.body.type.student) {
+        user = req.body as StudentDataModel;
+        db.doc(`users/${user.uid}`).update({roles: {student: true}}, )
+    }
 
-//     db.doc(`users/${user.uid}`).set(userData).then((ref) => {
-//         return res.status(200);
-//     }).catch((err) => {
-//         return res.status(400);
-//     })
+    else if (req.body.type.employer) {
+        user = req.body as EmployerDataModel;
+        db.doc(`users/${user.uid}`).update({roles: {employer: true}}, )
+    }
+    
+    else {
+        res.status(400);
+        return res.end();
+    }
 
-//     return res.status(200);
-// });
+    docref.set(user).then((ref) => {
+        res.status(200);
+    }).catch((err) => {
+        res.status(400);
+    }).finally(() => {
+        return res.end();
+    });
+   
+});
 
-// export const httpTest = functions.https.onRequest(app);
+export const api = functions.https.onRequest(app);
 
