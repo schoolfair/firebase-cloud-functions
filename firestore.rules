@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+  	function getRole(role) {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles[role]
+    }
+  
+  	match /applications/{document} {
+    
+      allow read: if (request.auth != null);
+      allow create: if getRole('student');
+      allow update: if getRole('employer'); 
+      allow delete: if request.auth != null && getRole('student'); // Add in ownership of listing
+    }
+  
+    match /listings/{document} {
+    
+      allow read: if (request.auth != null);
+      allow create: if getRole('employer');
+      allow update: if request.auth != null && getRole('employer'); // Add in ownership of listing
+      allow delete: if request.auth != null && getRole('employer'); // Add in ownership of listing
+    }
+    
+    match /users/{userId} {
+
+      allow read;
+      allow create;
+      allow update: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /user-data/{userId} {
+
+      allow read: if (request.auth != null && request.auth.uid == userId) || (getRole('employer'));
+      allow create;
+      allow update: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
